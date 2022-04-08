@@ -1,0 +1,39 @@
+{
+	{
+	"wf_name":"customer_load_wf",
+	"engine_type":"Glue",
+	"job_template":"GlueETLDB2ToS3",
+	"system_config_table":table to find secret",
+	"wf_config":{
+		"no_of_workers":5,
+		"worker_type":"standard"
+	}
+	"jobs":[
+			{
+				"job_name":"DL_AWS_DB2_DW_PRD1_CONTACT_HISTORY_WK",
+				"job_config_override":{
+					"no_of_workers":10
+				}
+				"job_params":{
+					"source_db":"dev",
+					"source_table:"",
+					"SQL_EXEC_TXT":"",
+					"target_path":"s3://..",
+					"target_format":"parquet"
+				}
+				
+			},
+			{
+				"job_name":"DL_AWS_DB2_DW_PRD1_CONTACT_ADDRESS_HISTORY_WK",
+				"job_params":{
+					"source_db":"dev",
+					"source_table:"",
+					"SQL_EXEC_TXT":"",
+					"target_path":"s3://..",
+					"target_format":"parquet"
+				}
+				
+			}
+		]
+	}
+}
