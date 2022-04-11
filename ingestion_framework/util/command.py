@@ -22,6 +22,7 @@ class CommandFactory(object):
 
     def handler(self, fn_handler):
         self.command_handler = fn_handler
+        return self
 
-    def execute(self):
-        self.command_handler()
+    def execute(self, **kwargs):
+        self.command_handler(kwargs)

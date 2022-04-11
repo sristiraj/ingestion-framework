@@ -11,7 +11,7 @@ def test_onboard():
     with open(file) as f:
         js_data = json.load(f)
     print(type(js_data))    
-    # trigger(js_data)
+    trigger(js_data)
 
 if __name__ == "__main__":
     test_onboard()    

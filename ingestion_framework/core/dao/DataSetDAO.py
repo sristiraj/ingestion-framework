@@ -11,7 +11,8 @@ from datetime import datetime
 
 
 class DataSetDAO(BaseDAO):
-
+    def __init__(self):
+        self.__name__ = "DataSetDAO"
     def create_record(self, record: TypedDict):
         return DataSet(record)
     def read_record(self, key: str)-> DataSet:
