@@ -1,0 +1,4 @@
+metastore_type:
+  dev: 'dynamodb'
+  qa: 'dynamodb'
+  prod: 'dynamodb'
