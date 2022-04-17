@@ -1,16 +1,16 @@
 import os, sys
-sys.path.append(os.path.dirname(__file__))
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from util.command import CommandFactory
-from util.command import Command
-from core.dao import *
-from core.dao.DataSetDAO import DataSetDAO
-from core.dao.WorkFlowDAO import WorkFlowDAO
-from core.dao.WorkFlowConfigDAO import WorkFlowConfigDAO
-from core.dao.JobDAO import JobDAO
-from core.dao.JobConfigDAO import JobConfigDAO
-from core.dao.JobParamDAO import JobParamDAO
-from core.connection import *
+from ingestion_framework.util.command import CommandFactory
+from ingestion_framework.util.command import Command
+from ingestion_framework.core.dao import *
+from ingestion_framework.core.dao.DataSetDAO import DataSetDAO
+from ingestion_framework.core.dao.WorkFlowDAO import WorkFlowDAO
+from ingestion_framework.core.dao.WorkFlowConfigDAO import WorkFlowConfigDAO
+from ingestion_framework.core.dao.JobDAO import JobDAO
+from ingestion_framework.core.dao.JobConfigDAO import JobConfigDAO
+from ingestion_framework.core.dao.JobParamDAO import JobParamDAO
+from ingestion_framework.core.connection import *
 import uuid
 
 
