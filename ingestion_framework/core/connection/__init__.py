@@ -5,9 +5,10 @@ import os
 from abc import ABC, abstractmethod
 from typing import Optional, Any
 from datetime import datetime
+from boto3.dynamodb.conditions import Key, Attr
 import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from core.dao import BaseDAO
+
 
 class Connection(ABC):
 
@@ -19,13 +20,20 @@ class Connection(ABC):
         pass
 
     @abstractmethod
-    def query(self, connection: Connection, table: str, key_name: str, key_value: str):
+    def query(self, table: str, record: Dict):
         pass
     
     @abstractmethod
-    def add(self, connection: Connection, table: str, record: BaseDAO):
+    def add(self, table: str, record: Dict):
         pass
 
+    @abstractmethod
+    def update(self, table: str, record: Dict):
+        pass
+
+    @abstractmethod
+    def delete(self, table: str, record: Dict):
+        pass
 class DynamoDBConnection(Connection):
     '''
         This class is sub classed from connection class to create dynamodb connection
@@ -35,13 +43,20 @@ class DynamoDBConnection(Connection):
         #Read region from environment variable during init call. If variable does not exist, use us-east-1 as default
         try:
             self.region = os.environ["AWS_REGION"]
+            self.profile = os.environ.get("AWS_PROFILE",None)
             self.dynamodb = ""
         except Exception as e:
             self.region = 'us-east-1'
+            self.profile = None
 
     def connect(self)->DynamoDBConnection:
         try:
-            self.dynamodb = boto3.resource("dynamodb", region_name = self.region)
+            if self.profile is not None:
+                session = boto3.Session(profile_name=self.profile)
+            else:
+                session = boto3.Session()
+            self.dynamodb = session.resource("dynamodb", region_name = self.region)
+   
             return self
         except:
             raise Exception("Error Connecting to dynamodb")
@@ -60,12 +75,19 @@ class DynamoDBConnection(Connection):
             data.extend(response['Items'])
         return data
 
-    def query(self, table, key_name, key_val):
+    def query(self, table: str, record: Dict):
         tbl = self.dynamodb.Table(table)
-        resp = tbl.query(KeyConditionExpression=Key(key_name).eq(key_val))   
+        filter_exp = ""
+        for key in record["key"].keys():
+            if filter_exp == "":
+                filter_exp = Key(key).eq(record["key"][key])
+            else:
+                filter_exp = filter_exp & Key(key).eq(record["key"][key])    
+        
+        resp = tbl.query(KeyConditionExpression=filter_exp)   
         data = resp["Items"]
         while 'LastEvaluatedKey' in resp:
-            resp = tbl.query(KeyConditionExpression=Key(key_name).eq(key_val), ExclusiveStartKey=response['LastEvaluatedKey']) 
+            resp = tbl.query(KeyConditionExpression=filter_exp, ExclusiveStartKey=response['LastEvaluatedKey']) 
             data.extend(response['Items'])
         return data
 
@@ -73,6 +95,24 @@ class DynamoDBConnection(Connection):
         tbl = self.dynamodb.Table(table)
         tbl.put_item(Item=record)
 
+    def update(self, table: str, record: Dict):
+        tbl = self.dynamodb.Table(table)
+        update_exp = "set "
+        update_attr = {}
+        for update_record in record["update_item"]:
+            if update_exp != "set ":
+                update_exp = update_exp+ " and "
+            update_exp = update_exp + update_record["update_col"] +" = "+ ":"+update_record["update_col"]
+            update_attr[":"+update_record["update_col"]] = update_record["update_val"]
+        response = tbl.update_item(
+            Key=record["key"],
+            UpdateExpression=update_exp,
+            ExpressionAttributeValues = update_attr,
+            ReturnValues="UPDATED_NEW"
+        )
+
+    def delete(self, table: str, key: str):
+        pass
 class ConnectionType(Enum):
     DYNAMODB = 'DYNAMODB'
 

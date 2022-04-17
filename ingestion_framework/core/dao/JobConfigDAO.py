@@ -8,14 +8,25 @@ import boto3
 from core.connection import *
 from types import *
 from datetime import datetime
+from core.dao.types import *
 
 
 class JobConfigDAO(BaseDAO):
+    def __init__(self):
+        self.__name__ = "JobConfigDAO"
+        self.datastore = "job_config"
+    
+    def create_record(self, record: TypedDict, connector: Conn):
+        data =  JobConfig(record)
+        connector.add(self.datastore, data)
+        return record["job_config_id"]
 
-    def create_record(self, record: TypedDict):
-        return JobConfig(record)
-    def read_record(self, key: str)-> DataSet:
-        return Job({"param_name":"demo","param_value":key, "is_active":True, "version":1, "created_date":datetime.now(),"updated_date":datetime.now(),"job_uuid":"demo"})
+    def read_record(self, record: Dict, connector: Connection)-> DataSet:
+        return connector.query(self.datastore, record)
+
+    def update_record(self, record: Dict, connector: Connection):
+        return connector.update(self.datastore, record)
+        
 
 if __name__ == "__main__":
     JobConfigDAO()

@@ -16,6 +16,8 @@
         "job_params": {
           "source_db": "dev",
           "source_table": "ggfd",
+          "target_db":"dev",
+          "target_table":"dl_ggfd",
           "target_path": "s3://..",
           "target_format": "parquet"
         }
@@ -25,6 +27,8 @@
         "job_params": {
           "source_db": "dev",
           "source_table": "asd",
+          "target_db":"dev",
+          "target_table":"dl_asd",
           "target_path": "s3://..",
           "target_format": "parquet"
         }

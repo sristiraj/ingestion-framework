@@ -8,12 +8,20 @@ import boto3
 from core.connection import *
 from types import *
 from datetime import datetime
-
+from core.dao.types import *
 
 class WorkFlowDAO(BaseDAO):
+    def __init__(self):
+        self.__name__ = "WorkFlowDAO"
+        self.datastore = "workflow"
+    
+    def create_record(self, record: TypedDict, connector: Connection):
+        data =  WorkFlow(record)
+        connector.add(self.datastore, data)
+        return record["wf_uuid"]
 
-    def create_record(self, record: TypedDict):
-        return WorkFlow(record)
-    def read_record(self, key: str)-> DataSet:
-        return WorkFlow({"wf_uuid":"demo","wf_name":key,"job_schedule_uuid":"demo","is_active":True,"created_date":datetime.now(),"updated_date":datetime.now(),"version":1})
+    def read_record(self, record: Dict, connector: Connection)-> DataSet:
+        return connector.query(self.datastore, record)
 
+    def update_record(self, record: Dict, connector: Connection):
+        return connector.update(self.datastore, record, connector)
