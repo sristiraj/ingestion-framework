@@ -18,7 +18,9 @@ class CommandFactory(object):
             raise ValueError(f"{command} is not a member of ConnectionType class.")
         if self.command == Command.ONBOARD:
             self.command_handler = self.onboard
-
+        elif self.command == Command.START:
+            self.command_handler = self.onboard
+            
 
     def handler(self, fn_handler):
         self.command_handler = fn_handler

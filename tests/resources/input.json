@@ -1,6 +1,6 @@
 {
-    "wf_name": "customer_load_wf",
-    "engine_type": "Glue",
+    "wf_name": "customer_load_wf_start",
+    "engine_type": "GLUESPARKJOB",
     "job_template": "GlueETLDB2ToS3",
     "system_config_table": "table to find secret",
     "wf_config": {

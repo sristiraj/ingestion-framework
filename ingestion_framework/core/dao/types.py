@@ -4,11 +4,6 @@ from datetime import date, datetime
 import enum
 
 
-class JobEngineType(enum.Enum):
-    GLUESPARKJOB = 1
-    GLUEPYTHONSHELL = 2
-    AWSLAMBDA = 3
-
 class DataSet(TypedDict):
     partition_key: str
     sort_key: str
