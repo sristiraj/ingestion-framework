@@ -43,7 +43,7 @@ class Engine(ABC):
         pass
 
     @abstractmethod
-    def deploy(self, workflow_name: str):
+    def deploy(self, workflow_name: str, template: str):
         pass
 
 
@@ -61,6 +61,7 @@ class GlueSparkJobEngine(Engine):
 
 
         return job_run_id["JobRunId"]
+
     def monitor(self, job_arn: str, run_id: str):
         session = boto3.session.Session()
         glue_client = session.client('glue')
@@ -71,7 +72,7 @@ class GlueSparkJobEngine(Engine):
             status = status_detail.get("JobRun").get("JobRunState")
             if status.lower() == "running":
                 return "running"
-            elif status.lower() == "completed":
+            elif status.lower() == "completed" or status.lower() == "success" or status.lower() == "succeeded":
                 return "completed"
             elif status.lower() == "error" or status.lower() == "failed":
                 return "error"    
@@ -80,9 +81,27 @@ class GlueSparkJobEngine(Engine):
         except Exception as e:
             raise Exception( "Unexpected error in run_glue_job: " + e.__str__())
 
-    def deploy(self, workflow_name: str):
-        pass
+    def deploy(self, workflow_name: str, template: str):
+        session = boto3.session.Session()
+        glue_client = session.client('glue')
 
+        try:
+            status_detail = glue_client.delete_job(JobName=workflow_name)
+
+            return "Job deleted"
+        except ClientError as e:
+            raise Exception( "boto3 client error in run_glue_job: " + e.__str__())
+        except Exception as e:
+            raise Exception( "Unexpected error in run_glue_job: " + e.__str__())
+
+        try:
+            response = client.start_blueprint_run(BlueprintName=template,Parameters='string',RoleArn='string')
+
+            return "Job created"
+        except ClientError as e:
+            raise Exception( "boto3 client error in run_glue_job: " + e.__str__())
+        except Exception as e:
+            raise Exception( "Unexpected error in run_glue_job: " + e.__str__())
 class EngineFactory(object):
     def __init__(self, engine_type: str):
         if not JobEngineType.has_value(engine_type):

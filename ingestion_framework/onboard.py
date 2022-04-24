@@ -11,6 +11,7 @@ from ingestion_framework.core.dao.JobDAO import JobDAO
 from ingestion_framework.core.dao.JobConfigDAO import JobConfigDAO
 from ingestion_framework.core.dao.JobParamDAO import JobParamDAO
 from ingestion_framework.core.connection import *
+from ingestion_framework.core.engine import *
 import uuid
 
 
@@ -23,6 +24,7 @@ def onboard(payload: dict):
     template = payload["data"].get("job_template",None)
     sys_config = payload["data"].get("system_config_table",None)
     wf_config = payload["data"].get("wf_config",None)
+    
 
     wf_uuid = WorkFlowDAO().create_record({"partition_key":workflow_name, "sort_key": "true", "wf_uuid":str(uuid.uuid4()),"wf_name":workflow_name,"job_schedule_uuid":None,"is_active":True,"created_date":datetime.now().isoformat(),"updated_date":datetime.now().isoformat(),"version":1,"transaction_id":transaction_id}, conn)
     
@@ -62,7 +64,18 @@ def onboard(payload: dict):
     jb = JobDAO()
     #Read old records
     record_job = jb.read_record(record = {"key":{"partition_key":workflow_name}}, connector = conn)
+    #get latest job arn if already available
+    job_arn = None
+    if len(record_job) >0:
+        job_arn = record_job[0].get("job_arn",None)
 
+    if job_arn is not None and job_arn!="draft" and template is not None:
+        eng_type_wf = JobEngineType.get_instance(template)
+        eng = EngineFactory(eng_type_wf).get_engine()
+        eng.deploy(job_arn, template)
+
+    if jobs[0].get("job_arn",None) is not None:
+        job_arn = jobs[0].get("job_arn",None)
     #Reset old version to 0
     old_version_job = 0
     #Inactivate old records
@@ -137,7 +150,7 @@ def onboard(payload: dict):
     print("Proceeding with new record update")
 
     for job in list(jobs):
-        job_uuid = jb.create_record({"partition_key":workflow_name, "sort_key":str(True)+"~"+job["job_name"]+str(new_version_job), "job_uuid": str(uuid.uuid4()), "job_name":job["job_name"], "wf_uuid": wf_uuid, "job_desc": job.get("job_desc",None), "job_engine_type": job.get("job_engine_type",None), "job_template_name": job.get("job_template_name",None), "job_priority": job.get("job_priority",1), "version":new_version_job, "is_active":True,"created_date":datetime.now().isoformat(),"updated_date":datetime.now().isoformat(),"transaction_id":transaction_id}, conn)
+        job_uuid = jb.create_record({"partition_key":workflow_name, "sort_key":str(True)+"~"+job["job_name"]+str(new_version_job), "job_uuid": str(uuid.uuid4()), "job_name":job["job_name"], "job_arn":job_arn, "wf_uuid": wf_uuid, "job_desc": job.get("job_desc",None), "job_engine_type": job.get("job_engine_type",None), "job_template_name": job.get("job_template_name",None), "job_priority": job.get("job_priority",1), "version":new_version_job, "is_active":True,"created_date":datetime.now().isoformat(),"updated_date":datetime.now().isoformat(),"transaction_id":transaction_id}, conn)
 
         # d = dso.create_record({"partition_key": workflow_name, "sort_key": job_uuid+"~"+job["job_params"]["source_db"]+"."+job["job_params"]["source_table"], "dataset_uuid":str(uuid.uuid4()),"dataset_name":job["job_params"]["source_db"]+"."+job["job_params"]["source_table"],"job_uuid":job_uuid,"is_active":True,"created_date":datetime.now().isoformat(),"updated_date":datetime.now().isoformat(),"version":new_version_dataset,"transaction_id":transaction_id},  conn)
         # d = dso.create_record({"partition_key": workflow_name, "sort_key": job_uuid+"~"+job["job_params"]["target_db"]+"."+job["job_params"]["target_table"], "dataset_uuid":str(uuid.uuid4()),"dataset_name":job["job_params"]["target_db"]+"."+job["job_params"]["target_table"],"job_uuid":job_uuid,"is_active":True,"created_date":datetime.now().isoformat(),"updated_date":datetime.now().isoformat(),"version":new_version_dataset,"transaction_id":transaction_id},  conn)

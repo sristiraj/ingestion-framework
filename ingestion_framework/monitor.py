@@ -85,9 +85,9 @@ def monitor(payload: dict):
         #check for lambda timeout
         
         if elapsed > 840:
-            return counter
+            break
         time.sleep(10)
-
+    return counter
 def trigger(payload: dict):
     #Create a command factory and start execution of onboarding using handler onboard function
     cf = CommandFactory(Command.START).handler(monitor)

@@ -53,7 +53,7 @@ def start(payload: dict):
             job_priority = job.get("job_priority",1)
             job_uuid = job["job_uuid"]
             #To be changed later
-            job_arn = "generate_PDF"
+            job_arn = job["job_arn"]
             arguments = {"--enable-glue-datacatalog":""}
             for job_param in job_param_details:
                 if job_param["is_active"]==True and job_param["job_uuid"]==job_uuid:

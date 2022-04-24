@@ -10,6 +10,7 @@
     "jobs": [
       {
         "job_name": "DL_AWS_DB2_DW_PRD1_CONTACT_HISTORY_WK",
+        "job_arn": "generate_PDF",
         "job_config_override": {
           "no_of_workers": "10"
         },
@@ -22,6 +23,7 @@
       },
       {
         "job_name": "DL_AWS_DB2_DW_PRD1_CONTACT_ADDRESS_HISTORY_WK",
+        "job_arn": "generate_PDF",
         "job_params": {
           "source_db": "dev",
           "source_table": "asd",
