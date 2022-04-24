@@ -18,6 +18,7 @@ import time
 
 logger = logging.getLogger(__file__)
 def monitor(payload: dict):
+    start = time.time()
     conn = ConnectionFactory(ConnectionType.DYNAMODB).get_connection().connect()
 
     transaction_id = str(uuid.uuid4())
@@ -79,6 +80,12 @@ def monitor(payload: dict):
                     run_status.update_record({"key":{"partition_key":running_job["partition_key"], "sort_key":running_job["sort_key"]}, "update_item":[{"update_col": "job_status", "update_val":status},{"update_col": "run_end_time", "update_val":datetime.now().isoformat()}]},conn)    
         if counter == 0:
             break
+        done = time.time()
+        elapsed = done - start
+        #check for lambda timeout
+        
+        if elapsed > 840:
+            return counter
         time.sleep(10)
 
 def trigger(payload: dict):
