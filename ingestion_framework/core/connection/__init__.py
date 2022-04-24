@@ -101,9 +101,10 @@ class DynamoDBConnection(Connection):
         update_attr = {}
         for update_record in record["update_item"]:
             if update_exp != "set ":
-                update_exp = update_exp+ " and "
+                update_exp = update_exp+ " , "
             update_exp = update_exp + update_record["update_col"] +" = "+ ":"+update_record["update_col"]
             update_attr[":"+update_record["update_col"]] = update_record["update_val"]
+
         response = tbl.update_item(
             Key=record["key"],
             UpdateExpression=update_exp,

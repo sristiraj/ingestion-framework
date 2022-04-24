@@ -35,11 +35,11 @@ class Engine(ABC):
         self._name = "engine configuration"
 
     @abstractmethod
-    def start(self, workflow_name: str):
+    def start(self, job_arn: str, arguments: dict):
         pass
 
     @abstractmethod
-    def monitor(self, workflow_name: str):
+    def monitor(self, job_arn: str, run_id: str):
         pass
 
     @abstractmethod
@@ -48,21 +48,38 @@ class Engine(ABC):
 
 
 class GlueSparkJobEngine(Engine):
-    def start(self, job_name: str):
+    def start(self, job_arn: str, arguments: dict):
         session = boto3.session.Session()
         glue_client = session.client('glue')
 
         try:
-            job_run_id = glue_client.start_job_run(JobName=job_name, Arguments=arguments)
+            job_run_id = glue_client.start_job_run(JobName=job_arn, Arguments=arguments)
         except ClientError as e:
             raise Exception( "boto3 client error in run_glue_job: " + e.__str__())
         except Exception as e:
             raise Exception( "Unexpected error in run_glue_job: " + e.__str__())
 
 
-        return job_run_id
-    def monitor(self, workflow_name: str):
-        pass
+        return job_run_id["JobRunId"]
+    def monitor(self, job_arn: str, run_id: str):
+        session = boto3.session.Session()
+        glue_client = session.client('glue')
+
+        try:
+            status_detail = glue_client.get_job_run(JobName=job_arn, RunId = run_id)
+
+            status = status_detail.get("JobRun").get("JobRunState")
+            if status.lower() == "running":
+                return "running"
+            elif status.lower() == "completed":
+                return "completed"
+            elif status.lower() == "error" or status.lower() == "failed":
+                return "error"    
+        except ClientError as e:
+            raise Exception( "boto3 client error in run_glue_job: " + e.__str__())
+        except Exception as e:
+            raise Exception( "Unexpected error in run_glue_job: " + e.__str__())
+
     def deploy(self, workflow_name: str):
         pass
 

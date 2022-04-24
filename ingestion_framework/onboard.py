@@ -76,23 +76,23 @@ def onboard(payload: dict):
     #increment version by 1
     new_version_job = old_version_job + 1
     
-    #dataset DAO object
-    dso = DataSetDAO()
+    # #dataset DAO object
+    # dso = DataSetDAO()
 
-    #read old dataset record for workflow
-    record_dataset = dso.read_record(record = {"key":{"partition_key":workflow_name}}, connector = conn)
+    # #read old dataset record for workflow
+    # record_dataset = dso.read_record(record = {"key":{"partition_key":workflow_name}}, connector = conn)
 
     #Reset old version to 0
-    old_version_dataset = 0
-    #Inactivate old records
-    if len(record_dataset)>0:
-        for itm in record_dataset:
-            old_version_dataset = itm["version"] if itm["version"]>old_version_dataset else old_version_dataset
-            if itm["is_active"] is True:
-                dso.update_record({"key":{"partition_key":workflow_name, "sort_key":itm["sort_key"]}, "update_item":[{"update_col": "is_active", "update_val":False}]}, conn)
+    # old_version_dataset = 0
+    # #Inactivate old records
+    # if len(record_dataset)>0:
+    #     for itm in record_dataset:
+    #         old_version_dataset = itm["version"] if itm["version"]>old_version_dataset else old_version_dataset
+    #         if itm["is_active"] is True:
+    #             dso.update_record({"key":{"partition_key":workflow_name, "sort_key":itm["sort_key"]}, "update_item":[{"update_col": "is_active", "update_val":False}]}, conn)
 
     #increment version by 1
-    new_version_dataset = old_version_dataset + 1
+    # new_version_dataset = old_version_dataset + 1
     
     #Job config DAO
     jobc = JobConfigDAO()
@@ -139,8 +139,8 @@ def onboard(payload: dict):
     for job in list(jobs):
         job_uuid = jb.create_record({"partition_key":workflow_name, "sort_key":str(True)+"~"+job["job_name"]+str(new_version_job), "job_uuid": str(uuid.uuid4()), "job_name":job["job_name"], "wf_uuid": wf_uuid, "job_desc": job.get("job_desc",None), "job_engine_type": job.get("job_engine_type",None), "job_template_name": job.get("job_template_name",None), "job_priority": job.get("job_priority",1), "version":new_version_job, "is_active":True,"created_date":datetime.now().isoformat(),"updated_date":datetime.now().isoformat(),"transaction_id":transaction_id}, conn)
 
-        d = dso.create_record({"partition_key": workflow_name, "sort_key": job_uuid+"~"+job["job_params"]["source_db"]+"."+job["job_params"]["source_table"], "dataset_uuid":str(uuid.uuid4()),"dataset_name":job["job_params"]["source_db"]+"."+job["job_params"]["source_table"],"job_uuid":job_uuid,"is_active":True,"created_date":datetime.now().isoformat(),"updated_date":datetime.now().isoformat(),"version":new_version_dataset,"transaction_id":transaction_id},  conn)
-        d = dso.create_record({"partition_key": workflow_name, "sort_key": job_uuid+"~"+job["job_params"]["target_db"]+"."+job["job_params"]["target_table"], "dataset_uuid":str(uuid.uuid4()),"dataset_name":job["job_params"]["target_db"]+"."+job["job_params"]["target_table"],"job_uuid":job_uuid,"is_active":True,"created_date":datetime.now().isoformat(),"updated_date":datetime.now().isoformat(),"version":new_version_dataset,"transaction_id":transaction_id},  conn)
+        # d = dso.create_record({"partition_key": workflow_name, "sort_key": job_uuid+"~"+job["job_params"]["source_db"]+"."+job["job_params"]["source_table"], "dataset_uuid":str(uuid.uuid4()),"dataset_name":job["job_params"]["source_db"]+"."+job["job_params"]["source_table"],"job_uuid":job_uuid,"is_active":True,"created_date":datetime.now().isoformat(),"updated_date":datetime.now().isoformat(),"version":new_version_dataset,"transaction_id":transaction_id},  conn)
+        # d = dso.create_record({"partition_key": workflow_name, "sort_key": job_uuid+"~"+job["job_params"]["target_db"]+"."+job["job_params"]["target_table"], "dataset_uuid":str(uuid.uuid4()),"dataset_name":job["job_params"]["target_db"]+"."+job["job_params"]["target_table"],"job_uuid":job_uuid,"is_active":True,"created_date":datetime.now().isoformat(),"updated_date":datetime.now().isoformat(),"version":new_version_dataset,"transaction_id":transaction_id},  conn)
 
         if job.get("job_config_override",None) is not None:
             for job_c in job["job_config_override"].keys():
