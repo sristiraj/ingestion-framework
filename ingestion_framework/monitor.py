@@ -44,7 +44,7 @@ def monitor(payload: dict):
             job_inter.append({"partition_key":workflow_name, "sort_key": sort_key, "job_arn":run["job_arn"], "job_uuid": job_uuid, "job_name":job_name, "engine_type":engine_type, "job_priority": job_priority, "arguments": run["arguments"], "job_status":run["job_status"], "run_id": run["run_id"]})
     #Add workflow
     print("Monitoring Workflow {}".format(workflow_name))
-
+    counter = 0
     job_loop = []
     for ct in range(len(job_inter)):
         if job_inter[ct]["job_status"]  == "waiting":
@@ -85,12 +85,15 @@ def monitor(payload: dict):
         #check for lambda timeout
         
         if elapsed > 840:
-            break
+            return counter
         time.sleep(10)
-    return counter
+    print({"result":str(counter)})    
+    return dict({"result":str(counter)})
+        
 def trigger(payload: dict):
     #Create a command factory and start execution of onboarding using handler onboard function
     cf = CommandFactory(Command.START).handler(monitor)
     response = cf.execute(data=payload)
+    print(response)
     return response
 
