@@ -29,16 +29,21 @@
       "Choices": [
         {
           "Variable": "$.Payload.body.result.Payload.body.result",
-          "NumericEquals": 0,
-          "Next": "Success (1)"
+          "StringEquals": "1",
+          "Next": "Success"
         },
         {
           "Variable": "$.Payload.body.result.Payload.body.result",
-          "NumericGreaterThan": 0,
+          "StringEquals": "-1",
           "Next": "Wait"
+        },
+        {
+          "Variable": "$.Payload.body.result.Payload.body.result",
+          "StringEquals": "0",
+          "Next": "Fail"
         }
       ],
-      "Default": "Success"
+      "Default": "Success (1)"
     },
     "Success (1)": {
       "Type": "Succeed"
@@ -50,6 +55,9 @@
       "Type": "Wait",
       "Seconds": 5,
       "Next": "Lambda Invoke"
+    },
+    "Fail": {
+      "Type": "Fail"
     }
   }
 }
