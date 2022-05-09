@@ -17,6 +17,8 @@ import time
 
 
 logger = logging.getLogger(__file__)
+#Time to sleep between monitor checks in secs
+SLEEP_TIME = 10
 def monitor(payload: dict):
     start = time.time()
     conn = ConnectionFactory(ConnectionType.DYNAMODB).get_connection().connect()
@@ -68,6 +70,7 @@ def monitor(payload: dict):
 
     while True:
         counter = 0
+        error_counter = 0
         for running_job in job_loop:
             if running_job["job_status"]=="running":
                 eng_type_wf = JobEngineType.get_instance(running_job["engine_type"])
@@ -76,17 +79,34 @@ def monitor(payload: dict):
                 logger.info(running_job)
                 if status == "running":
                     counter = counter + 1 
-                if status == "completed" or status == "error":
+                if status == "completed":
                     run_status.update_record({"key":{"partition_key":running_job["partition_key"], "sort_key":running_job["sort_key"]}, "update_item":[{"update_col": "job_status", "update_val":status},{"update_col": "run_end_time", "update_val":datetime.now().isoformat()}]},conn)    
-        if counter == 0:
-            break
+                if status == "error":
+                    error_counter = error_counter + 1 
+                    run_status.update_record({"key":{"partition_key":running_job["partition_key"], "sort_key":running_job["sort_key"]}, "update_item":[{"update_col": "job_status", "update_val":status},{"update_col": "run_end_time", "update_val":datetime.now().isoformat()}]},conn)    
+
         done = time.time()
         elapsed = done - start
         #check for lambda timeout
         
         if elapsed > 840:
-            return counter
-        time.sleep(10)
+            break
+        
+        
+        if counter == 0:
+            break
+
+        time.sleep(SLEEP_TIME)
+
+    if error_counter > 0:
+        counter = -1
+    
+    if elapsed > 840:
+        counter = 1 
+    
+    if counter > 0:
+        counter = 1
+    
     print({"result":str(counter)})    
     return dict({"result":str(counter)})
         
