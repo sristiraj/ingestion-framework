@@ -6,6 +6,7 @@ class Command(Enum):
     ONBOARD = 'ONBOARD'
     START = 'START'
     MONITOR = 'MONITOR'
+    NOTIFY = 'NOTIFY'
     
     @classmethod
     def has_value(cls, value):
@@ -20,6 +21,10 @@ class CommandFactory(object):
             self.command_handler = self.onboard
         elif self.command == Command.START:
             self.command_handler = self.onboard
+        elif self.command == Command.MONITOR:
+            self.command_handler = self.onboard   
+        elif self.command == Command.NOTIFY:
+            self.command_handler = self.onboard    
             
 
     def handler(self, fn_handler):
@@ -27,5 +32,4 @@ class CommandFactory(object):
         return self
 
     def execute(self, **kwargs):
-        response = self.command_handler(kwargs)
-        return response
+        self.command_handler(kwargs)
