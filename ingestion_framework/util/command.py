@@ -32,4 +32,5 @@ class CommandFactory(object):
         return self
 
     def execute(self, **kwargs):
-        self.command_handler(kwargs)
+        response = self.command_handler(kwargs)
+        return response
