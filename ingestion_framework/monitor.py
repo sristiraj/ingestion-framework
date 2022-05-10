@@ -43,7 +43,8 @@ def monitor(payload: dict):
             sort_key = run["sort_key"]
             job_name = run["job_name"]
             job_uuid = run["job_uuid"]
-            job_inter.append({"partition_key":workflow_name, "sort_key": sort_key, "job_arn":run["job_arn"], "job_uuid": job_uuid, "job_name":job_name, "engine_type":engine_type, "job_priority": job_priority, "arguments": run["arguments"], "job_status":run["job_status"], "run_id": run["run_id"]})
+            wf_run_event_id = run["wf_run_event_id"]
+            job_inter.append({"partition_key":workflow_name, "sort_key": sort_key, "job_arn":run["job_arn"], "job_uuid": job_uuid, "job_name":job_name, "engine_type":engine_type, "job_priority": job_priority, "arguments": run["arguments"], "job_status":run["job_status"], "run_id": run["run_id"],"wf_run_event_id":wf_run_event_id})
     #Add workflow
     print("Monitoring Workflow {}".format(workflow_name))
     counter = 0
@@ -57,6 +58,7 @@ def monitor(payload: dict):
             job_det["run_id"]=run_id
             job_det["partition_key"]=job_inter[ct]["partition_key"]
             job_det["sort_key"]=job_inter[ct]["sort_key"]
+            job_det["wf_run_event_id"] = job_inter[ct]["wf_run_event_id"]
             job_det["job_status"]="running"
             run_status.update_record({"key":{"partition_key":job_inter[ct]["partition_key"], "sort_key":job_inter[ct]["sort_key"]}, "update_item":[{"update_col": "job_status", "update_val":"running"},{"update_col": "run_id", "update_val":run_id},{"update_col": "run_start_time", "update_val":datetime.now().isoformat()}]},conn)    
             job_loop.append(job_det)
@@ -65,6 +67,7 @@ def monitor(payload: dict):
             # job_det["run_id"]=run_id
             job_det["partition_key"]=job_inter[ct]["partition_key"]
             job_det["sort_key"]=job_inter[ct]["sort_key"]
+            job_det["wf_run_event_id"] = job_inter[ct]["wf_run_event_id"]
             job_det["job_status"]="running"
             job_loop.append(job_det)
 
@@ -108,11 +111,14 @@ def monitor(payload: dict):
         counter = 1
     
     print({"result":str(counter)})    
-    return dict({"result":str(counter)})
+    if len(job_loop)>0:
+        return dict({"result":str(counter), "wf_run_event_id":job_loop[0]["wf_run_event_id"]})
+    else:
+        return dict({"result":str(counter), "wf_run_event_id":""})
         
 def trigger(payload: dict):
     #Create a command factory and start execution of onboarding using handler onboard function
-    cf = CommandFactory(Command.START).handler(monitor)
+    cf = CommandFactory(Command.MONITOR).handler(monitor)
     response = cf.execute(data=payload)
     print(response)
     return response
