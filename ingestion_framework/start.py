@@ -24,11 +24,17 @@ def start(payload: dict):
     #Check if existing run already ongoing for workflow
     run_status = RunStatusDAO()
     runs = run_status.read_record(record = {"key":{"partition_key":workflow_name}}, connector = conn)
-
+    
+    counter = 0
     for run in runs:
         if run["job_status"] == "waiting" or run["job_status"] == "running":
-            print("Run for workflow exists with status in waiting and running")
-            return run["sort_key"]
+            wf_run_event_id = run["wf_run_event_id"]
+            print("Run for workflow exists with status in waiting or running")
+            counter = counter + 1
+            break
+    if counter != 0:    
+        print("Return existing run {}".format(wf_run_event_id))
+        return {"status":"submitted","wf_run_event_id": wf_run_event_id}
     #Add workflow
     print("Starting Workflow {}".format(workflow_name))
 
@@ -53,7 +59,7 @@ def start(payload: dict):
             job_priority = job.get("job_priority",1)
             job_uuid = job["job_uuid"]
             #To be changed later
-            job_arn = job["job_arn"]
+            job_arn = "generate_PDF"
             arguments = {"--enable-glue-datacatalog":""}
             for job_param in job_param_details:
                 if job_param["is_active"]==True and job_param["job_uuid"]==job_uuid:
@@ -78,5 +84,6 @@ def trigger(payload: dict):
     #Create a command factory and start execution of onboarding using handler onboard function
     cf = CommandFactory(Command.START).handler(start)
     response = cf.execute(data=payload)
+    print(response)
     return response
 
