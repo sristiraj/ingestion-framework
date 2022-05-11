@@ -21,6 +21,7 @@ import boto3
 
 logger = logging.getLogger(__file__)
 SNS_TOPIC_ARN = "arn:aws:sns:us-east-1:793340215062:ingestionFramework"
+#SES_EMAIL = ""
 
 
 def notify(payload: dict):
@@ -52,6 +53,31 @@ def notify(payload: dict):
         message = message + job["wf_run_event_id"]+" | "+job["wf_name"]+" | "+job["run_id"]+" | "+job["job_name"]+" | "+job["job_status"]+" \n"
     client = boto3.client('sns')
     client.publish(TopicArn=SNS_TOPIC_ARN, Message= message, Subject="Automated Data Ingestion Notification: Do not reply")
+
+#     SES delivery code (In case of SES usage)
+#     ses_client = boto3.client("ses", region_name="eu-east-1")
+#     CHARSET = "UTF-8"
+
+#     response = ses_client.send_email(
+#         Destination={
+#             "ToAddresses": [
+#                 SES_EMAIL,
+#             ],
+#         },
+#         Message={
+#             "Body": {
+#                 "Text": {
+#                     "Charset": CHARSET,
+#                     "Data": message,
+#                 }
+#             },
+#             "Subject": {
+#                 "Charset": CHARSET,
+#                 "Data": "Automated Data Ingestion Notification: Do not reply",
+#             },
+#         },
+#         Source=SES_EMAIL,
+#     )
     return job_loop
     
 def trigger(payload: dict):
