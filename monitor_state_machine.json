@@ -71,7 +71,7 @@
     "Lambda Invoke_notification": {
       "Type": "Task",
       "Resource": "arn:aws:states:::lambda:invoke",
-      "OutputPath": "$.Payload.body.result.Payload.body",
+      "OutputPath": "$.Payload",
       "Parameters": {
         "Payload.$": "$",
         "FunctionName": "arn:aws:lambda:us-east-1:793340215062:function:ingestion_framework_notify:$LATEST"
