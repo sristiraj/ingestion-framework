@@ -43,7 +43,7 @@
           "Next": "Lambda Invoke _notification_success"
         }
       ],
-      "Default": "Success (1)",
+      "Default": "Success_default",
       "OutputPath": "$.Payload.body.result.Payload.body"
     },
     "Lambda Invoke _notification_success": {
@@ -71,7 +71,7 @@
     "Lambda Invoke_notification": {
       "Type": "Task",
       "Resource": "arn:aws:states:::lambda:invoke",
-      "OutputPath": "$.Payload",
+      "OutputPath": "$.Payload.body.result.Payload.body",
       "Parameters": {
         "Payload.$": "$",
         "FunctionName": "arn:aws:lambda:us-east-1:793340215062:function:ingestion_framework_notify:$LATEST"
@@ -90,11 +90,12 @@
       ],
       "Next": "Fail"
     },
-    "Success (1)": {
+    "Success_default": {
       "Type": "Succeed"
     },
     "Success": {
-      "Type": "Succeed"
+      "Type": "Succeed",
+      "Comment": "All jobs in workflow completed"
     },
     "Wait": {
       "Type": "Wait",
@@ -102,7 +103,8 @@
       "Next": "Lambda Invoke"
     },
     "Fail": {
-      "Type": "Fail"
+      "Type": "Fail",
+      "Cause": "Some jobs failed in workflow, please check the error details in job log"
     }
   }
 }
