@@ -112,9 +112,9 @@ def monitor(payload: dict):
     
     print({"result":str(counter)})    
     if len(job_loop)>0:
-        return dict({"result":str(counter), "wf_run_event_id":job_loop[0]["wf_run_event_id"]})
+        return dict({"wf_name":workflow_name, "result":str(counter), "wf_run_event_id":job_loop[0]["wf_run_event_id"]})
     else:
-        return dict({"result":str(counter), "wf_run_event_id":""})
+        return dict({"wf_name":workflow_name, "result":str(counter), "wf_run_event_id":""})
         
 def trigger(payload: dict):
     #Create a command factory and start execution of onboarding using handler onboard function
