@@ -46,8 +46,12 @@ def notify(payload: dict):
             job_det["job_status"] = run["job_status"]
             job_loop.append(job_det)
     
+    
+    message = "wf_run_event_id | wf_name | run_id | job_name | job_status \n"
+    for job in job_loop:
+        message = message + job["wf_run_event_id"]+" | "+job["wf_name"]+" | "+job["run_id"]+" | "+job["job_name"]+" | "+job["job_status"]+" \n"
     client = boto3.client('sns')
-    client.publish(TopicArn=SNS_TOPIC_ARN, Message= str(job_loop), Subject="Automated Data Ingestion Notification: Do not reply")
+    client.publish(TopicArn=SNS_TOPIC_ARN, Message= message, Subject="Automated Data Ingestion Notification: Do not reply")
     return job_loop
     
 def trigger(payload: dict):
