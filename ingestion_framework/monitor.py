@@ -32,7 +32,7 @@ def monitor(payload: dict):
     run_status = RunStatusDAO()
     runs = run_status.read_record(record = {"key":{"partition_key":workflow_name}}, connector = conn)
     for run in runs:
-        if run["job_status"] == "waiting" or run["job_status"] == "running":
+        if run["job_status"] == "waiting" or run["job_status"] == "running" or run["job_status"] == "error":
             job_priority = run.get("job_priority",1)
             engine_type = run["engine_type"]
             #To be changed later
@@ -50,7 +50,7 @@ def monitor(payload: dict):
     counter = 0
     job_loop = []
     for ct in range(len(job_inter)):
-        if job_inter[ct]["job_status"]  == "waiting":
+        if job_inter[ct]["job_status"]  == "waiting" or or job_inter[ct]["job_status"] == "error":
             eng_type_wf = JobEngineType.get_instance(job_inter[ct]["engine_type"])
             eng = EngineFactory(eng_type_wf).get_engine()
             run_id = eng.start(job_inter[ct]["job_arn"], dict(job_inter[ct]["arguments"]))  
