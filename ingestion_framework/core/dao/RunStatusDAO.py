@@ -13,7 +13,7 @@ from core.dao.types import *
 class RunStatusDAO(BaseDAO):
     def __init__(self):
         self.__name__ = "RunStatusDAO"
-        self.datastore = "run_status"
+        self.datastore = "job_run_status"
 
     def create_record(self, record: TypedDict, connector: Connection):
         data =  DataSet(record)
