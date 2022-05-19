@@ -27,7 +27,7 @@ def start(payload: dict):
     
     counter = 0
     for run in runs:
-        if run["job_status"] == "waiting" or run["job_status"] == "running":
+        if run["job_status"] == "waiting" or run["job_status"] == "running" or or run["job_status"] == "error":
             wf_run_event_id = run["wf_run_event_id"]
             print("Run for workflow exists with status in waiting or running")
             counter = counter + 1
