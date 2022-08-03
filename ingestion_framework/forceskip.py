@@ -33,7 +33,7 @@ def forceskip(payload: dict):
     runs = run_status.read_record(record = {"key":{"partition_key":workflow_name}}, connector = conn)
     print(runs)
     for run in runs:
-        if run["job_status"] == "error" or run["job_status"] == "waiting":
+        if run["job_status"] == "error" :
             print(run["sort_key"])
             run_status.update_record({"key":{"partition_key":workflow_name, "sort_key":run["sort_key"]}, "update_item":[{"update_col": "job_status", "update_val":"forceskip"},{"update_col": "run_end_time", "update_val":datetime.now().isoformat()}]},conn)
 
